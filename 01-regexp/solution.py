@@ -1,10 +1,14 @@
-PASSWORD_REGEXP = r'(?=.*[A-Z].*)(?=.*[a-z].*)(?=.*\d.*)(?![a-zA-Z\d]*([^$%@#&*!?])(?:[a-zA-Z\d]|\1)*$)(?!.*(.)\2.*$)(?:[a-zA-Z^$%@#&*!?\d]*){8,}'
-
-
 def nc(s):
     # non-capturing group
     return r'(?:' + s + r')'
 
+
+def sg(s, name):
+    # symbolic group
+    return r'(?P<' + name + '>' + s + ')'
+
+
+PASSWORD_REGEXP = r'(?=.*[A-Z].*)(?=.*[a-z].*)(?=.*\d.*)(?![a-zA-Z\d]*([^$%@#&*!?])(?:[a-zA-Z\d]|\1)*$)(?!.*(.)\2.*$)(?:[a-zA-Z^$%@#&*!?\d]*){8,}'
 
 N_255 = r'0*\d|0*\d\d|0*1\d\d|0*2[0-4]\d|0*25[0-5]'
 N_100_percents = r'0*\d%|0*\d\d%|100%'
@@ -31,12 +35,6 @@ OPERATOR = r'[*^/\-+]'
 LEFT_P = r'\('
 RIGHT_P = r'\)'
 
-
-def sg(s, name):
-    # symbolic group
-    return r'(?P<' + name + '>' + s + ')'
-
-
 EXPRESSION_REGEXP = r'|'.join(
     (
         sg(NUMBER, 'number'),
@@ -49,11 +47,27 @@ EXPRESSION_REGEXP = r'|'.join(
     )
 )
 
+DAY = nc(r'0*[1-9]|0*[1-2]\d|0*3[0-1]')
+MONTH = nc(r'0*[1-9]|1[0-2]')
+YEAR = nc(r'\d+')
 
-DATES_REGEXP = r'\d\d/\d\d/\d\d\d\d|\d\d\.\d\d\.\d\d\d\d'
+MONTH_RUS = nc(r'января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря')
+MON_RUS = nc(r'янв|фев|мар|апр|май|июн|июл|авг|сен|окт|ноя|дек')
+MONTH_ENG = nc(r'January|February|March|April|May|June|July|August|September|October|November|December')
+MON_ENG = nc(r'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec')
 
-# import re
-# for match in re.finditer(EXPRESSION_REGEXP, 'sin(x) + cos(y) * 2.5'):
-#     print(f'type: {match.lastgroup}, span: {match.span()}')
-#
-#
+DATES_REGEXP = '|'.join(
+    (
+        nc(DAY + r'\.' + MONTH + r'\.' + YEAR),
+        nc(DAY + r'/' + MONTH + r'/' + YEAR),
+        nc(DAY + r'-' + MONTH + r'-' + YEAR),
+        nc(YEAR + r'\.' + MONTH + r'\.' + DAY),
+        nc(YEAR + r'/' + MONTH + r'/' + DAY),
+        nc(YEAR + r'-' + MONTH + r'-' + DAY),
+        nc(DAY + r'\s*' + MONTH_RUS + r'\s*' + YEAR),
+        nc(MONTH_ENG + r'\s*' + DAY + r'\s*,\s*' + YEAR),
+        nc(MON_ENG + r'\s*' + DAY + r'\s*,\s*' + YEAR),
+        nc(YEAR + r'\s*,\s*' + MONTH_ENG + r'\s*' + DAY),
+        nc(YEAR + r'\s*,\s*' + MON_ENG + r'\s*' + DAY),
+    )
+)
