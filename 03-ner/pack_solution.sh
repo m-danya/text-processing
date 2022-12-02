@@ -1,0 +1,1 @@
+zip -r solution.zip solution.py description.txt tokenizer model_state_dict model_config train.py
